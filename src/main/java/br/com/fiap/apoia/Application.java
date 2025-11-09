@@ -1,7 +1,6 @@
 package br.com.fiap.apoia;
 
 import io.javalin.Javalin;
-import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
 
@@ -27,21 +26,22 @@ public class Application {
         Javalin app = Javalin.create(config -> {
             config.http.defaultContentType = "application/json";
             config.plugins.enableDevLogging();
+            // CORS p/ front (Vercel, etc.)
             config.plugins.enableCors(cors -> cors.add(it -> it.anyHost()));
         });
 
-// registra as rotas fora do config
+        // Rotas (fora do config, compatível com Javalin 5.x)
         app.routes(ApiController::routes);
 
+        // Healthcheck e mensagem na raiz
         app.get("/healthz", ctx -> ctx.result("ok"));
         app.get("/", ctx -> ctx.json(java.util.Map.of("name","Apoia+ API","hint","use /api")));
 
-
-
+        // Handler global de erros
         app.exception(Exception.class, (Exception e, Context ctx) -> {
             log.error("Unhandled error", e);
             ctx.status(HttpStatus.INTERNAL_SERVER_ERROR)
-               .json(new ErrorMessage(e.getMessage()));
+                    .json(new ErrorMessage(e.getMessage()));
         });
 
         app.start(port);

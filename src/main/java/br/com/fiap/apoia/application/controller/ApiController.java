@@ -3,6 +3,7 @@ package br.com.fiap.apoia.application.controller;
 import io.javalin.apibuilder.ApiBuilder;
 import io.javalin.http.Context;
 import io.javalin.http.HttpStatus;
+
 import br.com.fiap.apoia.domain.model.Paciente;
 import br.com.fiap.apoia.domain.model.Consulta;
 import br.com.fiap.apoia.domain.service.ApoiaService;
@@ -16,6 +17,7 @@ public class ApiController {
     public static void routes() {
         ApiBuilder.path("/api", () -> {
             ApiBuilder.get("/", ctx -> ctx.json(Map.of("name","Apoia+ API","version","1.0.0")));
+
             ApiBuilder.path("/pacientes", () -> {
                 ApiBuilder.get(ctx -> ctx.json(service.pacienteRepo().findAll()));
                 ApiBuilder.post(ApiController::createPaciente);
@@ -23,6 +25,7 @@ public class ApiController {
                 ApiBuilder.put("{id}", ApiController::updatePaciente);
                 ApiBuilder.delete("{id}", ApiController::deletePaciente);
             });
+
             ApiBuilder.path("/consultas", () -> {
                 ApiBuilder.get(ctx -> ctx.json(service.consultaRepo().list()));
                 ApiBuilder.post(ApiController::createConsulta);
@@ -37,14 +40,23 @@ public class ApiController {
         });
     }
 
+    // ---------- PACIENTES ----------
+
     private static void createPaciente(Context ctx) {
         Paciente p = ctx.bodyAsClass(Paciente.class);
         if (p.getNome() == null || p.getNome().isBlank() || p.getContato() == null) {
-            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of("error","nome e contato são obrigatórios")); return;
+            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of("error","nome e contato são obrigatórios"));
+            return;
+        }
+        if (!service.validarContato(p.getContato())) {
+            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of("error","contato inválido (email ou telefone 10-13 dígitos)"));
+            return;
         }
         if (p.getId() != null) p.setId(null);
         if (!p.isAtivo()) p.setAtivo(true);
-        ctx.status(HttpStatus.CREATED).json(service.pacienteRepo().create(p));
+
+        Paciente salvo = service.pacienteRepo().create(p);
+        ctx.status(HttpStatus.CREATED).json(salvo);
     }
 
     private static void getPaciente(Context ctx) {
@@ -57,23 +69,39 @@ public class ApiController {
     private static void updatePaciente(Context ctx) {
         Long id = Long.valueOf(ctx.pathParam("id"));
         Paciente p = ctx.bodyAsClass(Paciente.class);
-        if (!service.pacienteRepo().update(id, p)) ctx.status(HttpStatus.NOT_FOUND);
+        if (p.getContato() != null && !service.validarContato(p.getContato())) {
+            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of("error","contato inválido"));
+            return;
+        }
+        boolean updated = service.pacienteRepo().update(id, p);
+        if (!updated) ctx.status(HttpStatus.NOT_FOUND);
         else ctx.status(HttpStatus.NO_CONTENT);
     }
 
     private static void deletePaciente(Context ctx) {
         Long id = Long.valueOf(ctx.pathParam("id"));
-        if (!service.pacienteRepo().delete(id)) ctx.status(HttpStatus.NOT_FOUND);
+        boolean deleted = service.pacienteRepo().delete(id);
+        if (!deleted) ctx.status(HttpStatus.NOT_FOUND);
         else ctx.status(HttpStatus.NO_CONTENT);
     }
+
+    // ---------- CONSULTAS ----------
 
     private static void createConsulta(Context ctx) {
         Consulta c = ctx.bodyAsClass(Consulta.class);
         if (c.getPacienteId() == null || c.getDataHora() == null || c.getLinkSala() == null) {
-            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of("error","pacienteId, dataHora e linkSala são obrigatórios")); return;
+            ctx.status(HttpStatus.BAD_REQUEST).json(Map.of("error","pacienteId, dataHora e linkSala são obrigatórios"));
+            return;
+        }
+        // garante que paciente existe
+        if (service.pacienteRepo().findById(c.getPacienteId()).isEmpty()) {
+            ctx.status(HttpStatus.NOT_FOUND).json(Map.of("error","Paciente não encontrado"));
+            return;
         }
         if (c.getStatus() == null) c.setStatus("AGENDADA");
-        ctx.status(HttpStatus.CREATED).json(service.consultaRepo().create(c));
+
+        Consulta salvo = service.consultaRepo().create(c);
+        ctx.status(HttpStatus.CREATED).json(salvo);
     }
 
     private static void getConsulta(Context ctx) {
@@ -86,13 +114,15 @@ public class ApiController {
     private static void updateConsulta(Context ctx) {
         Long id = Long.valueOf(ctx.pathParam("id"));
         Consulta c = ctx.bodyAsClass(Consulta.class);
-        if (!service.consultaRepo().update(id, c)) ctx.status(HttpStatus.NOT_FOUND);
+        boolean updated = service.consultaRepo().update(id, c);
+        if (!updated) ctx.status(HttpStatus.NOT_FOUND);
         else ctx.status(HttpStatus.NO_CONTENT);
     }
 
     private static void deleteConsulta(Context ctx) {
         Long id = Long.valueOf(ctx.pathParam("id"));
-        if (!service.consultaRepo().delete(id)) ctx.status(HttpStatus.NOT_FOUND);
+        boolean deleted = service.consultaRepo().delete(id);
+        if (!deleted) ctx.status(HttpStatus.NOT_FOUND);
         else ctx.status(HttpStatus.NO_CONTENT);
     }
 
