@@ -1,0 +1,11 @@
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\domain\model\Paciente.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\domain\service\ApoiaService.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\infrastructure\persistence\repository\JdbcPacienteRepository.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\application\controller\ApiController.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\infrastructure\persistence\repository\JdbcConsultaRepository.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\infrastructure\persistence\repository\JdbcRepository.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\domain\model\Consulta.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\domain\model\Lembrete.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\infrastructure\persistence\repository\JdbcLembreteRepository.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\infrastructure\Database.java
+C:\Users\enzom\Downloads\SPRINT4_JAVA_DEPLOY (1)\src\main\java\br\com\fiap\apoia\Application.java
